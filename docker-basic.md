@@ -138,7 +138,7 @@ docker compose version
 
 ```bash
 docker pull nginx
-docker push bca/web-app:0.0.0
+docker push django_todolist:0.0.0
 docker images
 docker run
 docker ps
@@ -146,6 +146,10 @@ docker ps -a
 docker logs
 docker stop container_id
 docker rm container_id
+docker build
+docker volume 
+docker network
+docker compose
 ```
 
 ---
@@ -268,16 +272,39 @@ O **Dockerfile** é um ficheiro de texto que define **como uma imagem deve ser c
 Exemplo:
 
 ```dockerfile
+# Use the official Python image from the Docker Hub
 FROM python:3.12-slim
 
+# Set the working directory in the container
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Install system dependencies needed for building packages
+RUN apt-get update && apt-get install -y build-essential libpq-dev && rm -rf /var/lib/apt/lists/*
 
+# Set PYTHONPATH to include the todolist_project directory
+ENV PYTHONPATH=/app/todolist_project
+
+# Copy the requirements file into the container
+COPY requirements.txt .
+
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code into the container
 COPY . .
 
-CMD ["python", "app.py"]
+# Copy and set permissions for the entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Command to run the application
+CMD ["gunicorn", "config.wsgi:application", "-b", "0.0.0.0:8000", "--timeout", "120"]
 ```
 
 O Dockerfile **descreve a imagem**, mas ainda não a cria.
@@ -288,8 +315,10 @@ O Dockerfile **descreve a imagem**, mas ainda não a cria.
 
 Após criar o Dockerfile, usamos `docker build` para **criar a imagem**.
 
+Sem este passo, não existe imagem própria.
+
 ```bash
-docker build -t bca/web-app:0.0.0 .
+docker build -t django_todolist:0.0.0 .
 ```
 
 Ver imagens criadas:
@@ -298,7 +327,32 @@ Ver imagens criadas:
 docker images
 ```
 
-Sem este passo, não existe imagem própria.
+Executar a imagem criada sem mapear volume:
+```bash
+docker run --rm --name django_todolist -p 8000:8000 --env-file .env django_todolist:0.0.0
+```
+
+Alterar cotainer em execução, copiando ficheiros para o container:
+```bash
+docker cp todolist_project/templates/base.html django_todolist:/app/todolist_project/templates/base.html
+```
+Reiniar o container e verificar a alteração:
+```bash
+docker restart django_todolist
+```
+
+Eliminar o container e voltar a executar a imagem criada sem mapear volume, para ver a alteração:
+```bash
+docker rm -f django_todolist
+```
+```bash
+docker run --rm --name django_todolist -p 8000:8000 --env-file .env django_todolist:0.0.0
+```
+
+Executar a imagem criada mapeando volume e voltar a alter ficheiro e constatar a alteração:
+```bash
+docker run --rm --name django_todolist -p 8000:8000 -v $(pwd):/app --env-file .env django_todolist:0.0.0
+```
 
 ---
 
@@ -313,12 +367,7 @@ Um **Docker Registry** é um **repositório de imagens Docker**, usado para:
 * integrar com CI/CD
 * *Um registry é para imagens o que o GitHub ou GitLab é para código.*
 
-Sempre que executas:
-
-```bash
-docker pull nginx
-```
-estás a descarregar uma imagem de um **registry**.
+Sempre que executas: ```docker pull```, estás a descarregar uma imagem de um **registry**.
 
 **Doc:** [https://docs.docker.com/registry/](https://docs.docker.com/registry/)
 
@@ -352,7 +401,28 @@ Em empresas e projetos institucionais, é comum usar **registries privados**, po
 * GitLab Container Registry (self-hosted)
 * Quay (Red Hat)
 
-Exemplo de registry local:
+#### Exercicio: Utilizar registry publico:
+* Criar conta em Docker Hub [https://hub.docker.com](https://hub.docker.com)
+* Criar repositório no Docker Hub
+* Efetuar login no Docker Hub no terminal (Requerer ```token``` de acesso ao repositório no Docker Hub)
+* Criar ```tag``` da imagem criada (`:0.0.0`)
+```bash
+docker tag django_todolist:0.0.0 your_username/django_todolist:0.0.0
+```
+* Push para registry
+```bash
+docker push your_username/django_todolist:0.0.0
+```
+* Remover imagem local
+```bash
+docker rmi your_username/django_todolist:0.0.0
+```
+* Testar pull da imagem
+```bash
+docker pull your_username/django_todolist:0.0.0
+```
+
+#### Exemplo de registry local:
 
 ```bash
 docker run -d -p 5000:5000 registry:2
@@ -361,8 +431,9 @@ docker run -d -p 5000:5000 registry:2
 Push:
 
 ```bash
-docker tag bca/web-app:1.0 localhost:5000/bca/web-app:1.0
-docker push localhost:5000/bca/web-app:1.0
+docker tag django_todolist:0.0.0 localhost:5000/django_todolist:1.0
+docker push localhost:5000/django_todolist:1.0
+docker pull localhost:5000/django_todolist:1.0
 ```
 
 ---
