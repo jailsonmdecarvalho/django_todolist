@@ -12,3 +12,10 @@ services:
       - ./:/app
     environment:
       - PYTHONPATH=/app/todolist_project
+    networks:
+      - web-app-network
+
+networks:
+  web-app-network:
+    external: true
+      

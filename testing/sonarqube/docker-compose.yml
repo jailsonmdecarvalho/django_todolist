@@ -1,0 +1,46 @@
+services:
+  bac-sonarqube:
+    image: sonarqube:26.1.0.118079-community
+    container_name: bca-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: true
+      SONAR_JDBC_URL: ${SONAR_JDBC_URL:-jdbc:postgresql://bca-postgres16:5432/${POSTGRES_DB:-sonar_db}}
+      SONAR_JDBC_USERNAME: ${SONAR_JDBC_USERNAME:-postgres}
+      SONAR_JDBC_PASSWORD: ${SONAR_JDBC_PASSWORD:-postgres}
+      #SONAR_WEB_CONTEXT: "/sonarqube"
+    volumes:
+      - bca-sonarqube_data:/opt/sonarqube/data
+      - bca-sonarqube_extensions:/opt/sonarqube/extensions
+      - bca-sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - web-app-network
+    depends_on:
+      - bca-postgres16
+  bca-postgres16:
+    image: postgres:16
+    container_name: bca-postgres16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sonar_db}
+    volumes:
+      - bca-postgres16_data:/var/lib/postgresql/data
+    networks:
+      - web-app-network
+
+networks:
+  ### create a custom network, named "web-app-network" to allow communication between containers
+  web-app-network: 
+    external: true
+
+volumes:
+  bca-sonarqube_data:
+    name: bca-sonarqube_data
+  bca-sonarqube_logs:
+    name: bca-sonarqube_logs
+  bca-sonarqube_extensions:
+    name: bca-sonarqube_extensions
+  bca-postgres16_data:
+    name: bca-postgres16_data

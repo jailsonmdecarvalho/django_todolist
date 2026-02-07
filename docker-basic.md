@@ -9,18 +9,19 @@ Este guia tem como objetivo capacitar os formandos a **compreender Docker desde 
 1. [O que é Docker](#1️⃣-o-que-é-docker)
 2. [Docker vs Máquina Virtual (VM)](#2️⃣-docker-vs-máquina-virtual-vm)
 3. [Conceitos Essenciais do Docker](#3️⃣-conceitos-essenciais-do-docker)
-4. [Instalação do Docker](#4️⃣-instalação-do-docker)
-5. [Comandos Docker Básicos](#5️⃣-comandos-docker-básicos)
-6. [Trabalhar com Containers (`docker run`)](#6️⃣-trabalhar-com-containers-docker-run)
-7. [Volumes](#7️⃣-volumes)
-8. [Redes Docker](#8️⃣-redes-docker)
-9. [Docker Compose (uso prático)](#9️⃣-docker-compose-uso-prático)
-10. [Dockerfile (definição da imagem)](#🔟-dockerfile-definição-da-imagem)
-11. [Docker Build (criar a imagem)](#1️⃣1️⃣-docker-build-criar-a-imagem)
-12. [Docker Registry (armazenar a imagem)](#1️⃣2️⃣-docker-registry-armazenar-a-imagem)
-13. [Docker e Segurança](#1️⃣3️⃣-docker-e-segurança)
-14. [Exercícios Práticos](#-exercícios-práticos)
-15. [Documentação Oficial](#-documentação-oficial)
+4. [Arquitetura Docker](#4️⃣-arquitetura-docker)
+5. [Instalação do Docker](#4️⃣-instalação-do-docker)
+6. [Comandos Docker Básicos](#5️⃣-comandos-docker-básicos)
+7. [Trabalhar com Containers (`docker run`)](#6️⃣-trabalhar-com-containers-docker-run)
+8. [Volumes](#7️⃣-volumes)
+9. [Redes Docker](#8️⃣-redes-docker)
+10. [Docker Compose (uso prático)](#9️⃣-docker-compose-uso-prático)
+11. [Dockerfile (definição da imagem)](#🔟-dockerfile-definição-da-imagem)
+12. [Docker Build (criar a imagem)](#1️⃣1️⃣-docker-build-criar-a-imagem)
+13. [Docker Registry (armazenar a imagem)](#1️⃣2️⃣-docker-registry-armazenar-a-imagem)
+14. [Docker e Segurança](#1️⃣3️⃣-docker-e-segurança)
+15. [Exercícios Práticos](#-exercícios-práticos)
+16. [Documentação Oficial](#-documentação-oficial)
 
 ---
 
@@ -114,7 +115,28 @@ web → db:5432
 
 ---
 
-## 4️⃣ Instalação do Docker
+## 4️⃣ Arquitetura Docker
+
+O Docker utiliza uma arquitetura `cliente–servidor`.
+O cliente `docker` envia comandos e o `daemon Docker` é responsável por `construir, executar e gerir os containers`.
+
+O `cliente` e o `daemon` podem estar:
+- no mesmo sistema, ou
+- em sistemas diferentes (daemon remoto)
+
+\
+A comunicação entre eles é feita através de:
+- API REST
+- sockets UNIX
+- rede
+
+O **Docker Compose** é outro `cliente` Docker, utilizado para gerir aplicações compostas por vários containers.
+
+![Arquitetura](https://docs.docker.com/get-started/images/docker-architecture.webp)
+
+---
+
+## 5️⃣ Instalação do Docker
 
 ### Windows / macOS
 
@@ -134,7 +156,7 @@ docker compose version
 
 ---
 
-## 5️⃣ Comandos Docker Básicos
+## 6️⃣ Comandos Docker Básicos
 
 ```bash
 docker pull nginx
@@ -154,7 +176,7 @@ docker compose
 
 ---
 
-## 6️⃣ Trabalhar com Containers (`docker run`)
+## 7️⃣ Trabalhar com Containers (`docker run`)
 
 Executar um container simples:
 
@@ -188,7 +210,7 @@ docker exec -it container_id sh
 
 ---
 
-## 7️⃣ Volumes
+## 8️⃣ Volumes
 
 Criar volume:
 
@@ -206,7 +228,7 @@ Volumes garantem persistência de dados.
 
 ---
 
-## 8️⃣ Redes Docker
+## 9️⃣ Redes Docker
 
 Listar redes:
 
@@ -230,7 +252,7 @@ Comunicação entre containers depende da rede Docker.
 
 ---
 
-## 9️⃣ Docker Compose (uso prático)
+## 🔟 Docker Compose (uso prático)
 
 O **Docker Compose** permite executar **vários containers em conjunto**, ideal para desenvolvimento local e ambiente de validação.
 
@@ -246,7 +268,7 @@ services:
       - "8080:80"
 
   db:
-    image: postgres:18
+    image: postgres:18.1
     environment:
       POSTGRES_PASSWORD=postgres
 ```
@@ -265,7 +287,7 @@ Neste ponto estamos **a usar imagens existentes**, não a criar imagens novas.
 
 ---
 
-## 🔟 Dockerfile (definição da imagem)
+## 1️⃣1️⃣ Dockerfile (definição da imagem)
 
 O **Dockerfile** é um ficheiro de texto que define **como uma imagem deve ser construída**.
 
@@ -311,7 +333,7 @@ O Dockerfile **descreve a imagem**, mas ainda não a cria.
 
 ---
 
-## 1️⃣1️⃣ Docker Build (criar a imagem)
+## 1️⃣2️⃣ Docker Build (criar a imagem)
 
 Após criar o Dockerfile, usamos `docker build` para **criar a imagem**.
 
@@ -356,7 +378,7 @@ docker run --rm --name django_todolist -p 8000:8000 -v $(pwd):/app --env-file .e
 
 ---
 
-## 1️⃣2️⃣ Docker Registry (armazenar a imagem)
+## 1️⃣3️⃣ Docker Registry (armazenar a imagem)
 
 Depois de criada, a imagem deve ser **armazenada num Docker Registry**.
 
@@ -485,7 +507,7 @@ Aceder registry UI na porta `8080`: http://localhost:8080
 
 ---
 
-## 1️⃣3️⃣ Docker e Segurança
+## 1️⃣4️⃣ Docker e Segurança
 
 Boas práticas:
 
